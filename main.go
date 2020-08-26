@@ -18,5 +18,5 @@ package main
 import "github.com/mchirico/go-gmail/cmd"
 
 func main() {
-  cmd.Execute()
+	cmd.Execute()
 }

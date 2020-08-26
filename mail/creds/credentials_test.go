@@ -1,4 +1,4 @@
-package mail
+package creds
 
 import (
 	"encoding/base64"
@@ -10,17 +10,14 @@ import (
 
 func Test_findDir(t *testing.T) {
 
-	dir, err := FindDir()
-	fmt.Println(dir)
-	if err != nil {
-		t.Errorf("Can't find .json")
-	}
+	c := CREDS{}
+	c.PopulateCREDS()
 
 }
 
 func Test_GetSRV(t *testing.T) {
 
-	srv := GetSRV()
+	srv := NewGmailSrv()
 	user := "me"
 	r, err := srv.Users.Labels.List(user).Do()
 	if err != nil {
@@ -51,10 +48,9 @@ func Test_GetSRV(t *testing.T) {
 		g, _ := srv.Users.Messages.Get("me", v.Id).Format("raw").Do()
 		fmt.Println(g.Snippet)
 		data, _ := base64.StdEncoding.DecodeString(g.Raw)
-		sdata := fmt.Sprintf("%s",data)
+		sdata := fmt.Sprintf("%s", data)
 
-		fmt.Printf("\n%s\n\n____\n",sdata[0:])
-
+		fmt.Printf("\n%s\n\n____\n", sdata[0:])
 
 	}
 
