@@ -64,7 +64,7 @@ func GetNewMessages(labelID string, maxCount int) []map[string][]string {
 		tag["Snippet"] = []string{g.Snippet}
 		total = append(total, tag)
 		tag["Id"] = []string{v.Id}
-		total = append(total,tag)
+		total = append(total, tag)
 	}
 	return total
 }
@@ -120,34 +120,12 @@ func Send(to string, subject string, body string) error {
 
 }
 
-func Reply(replyID, from, to, msg_to_send string)  {
+func Reply(replyID, msgID, from, to, subject, msg_to_send string, ) {
 
 	srv := creds.NewGmailSrv()
-	nsrv := gmail.NewUsersService(srv)
-
-
-	// replyID := "174652e40183c2e9"
-
-	msg, _ := nsrv.Messages.Get("me", replyID).Format("metadata").Do()
-
 
 	var rawMessage = []string{}
 
-	//from := "dead@cwxstat.com"
-	//to := "mchirico@gmail.com"
-
-	subject := ""
-	msgID := ""
-	for _, v := range msg.Payload.Headers {
-		if v.Name == "Subject" {
-			subject = v.Value
-		}
-		if v.Name == "Message-ID" {
-			msgID = v.Value
-		}
-	}
-
-	subject = "C2C Contracts Only...  Re: " + subject
 
 	// Add the to and Reply-To
 	rawMessage = append(rawMessage, fmt.Sprintf("To: %s\r\n", to))
@@ -156,7 +134,6 @@ func Reply(replyID, from, to, msg_to_send string)  {
 	rawMessage = append(rawMessage, fmt.Sprintf("In-Reply-To: %s\r\n", msgID))
 	rawMessage = append(rawMessage, fmt.Sprintf("References: %s\r\n", msgID))
 	rawMessage = append(rawMessage, fmt.Sprintf("Return-Path: %s\r\n", from))
-
 
 	// Add extra linebreak for splitting headers and body
 	rawMessage = append(rawMessage, "\r\n\r\n")
@@ -179,5 +156,3 @@ func Reply(replyID, from, to, msg_to_send string)  {
 	}
 
 }
-
-

@@ -17,17 +17,18 @@ func TestLabels(t *testing.T) {
 
 func TestGetNewMessages(t *testing.T) {
 	r := GetNewMessages("TRASH", 3)
-	id := 0
-	fmt.Println(r[id]["Subject"])
-	fmt.Println(r[id]["Message-ID"])
-	fmt.Println(r[id]["Return-Path"])
-	fmt.Println(r[id]["From"])
-	fmt.Println(r[id]["Snippet"])
-	fmt.Println(r[id]["Id"])
+	for id, _ := range r {
+		fmt.Println(r[id]["Subject"])
+		fmt.Println(r[id]["Message-ID"])
+		fmt.Println(r[id]["Return-Path"])
+		fmt.Println(r[id]["From"])
+		fmt.Println(r[id]["Snippet"])
+		fmt.Println(r[id]["Id"])
+		fmt.Println("----------------------")
+
+	}
 
 }
-
-
 
 func TestGetRaw(t *testing.T) {
 	r := GetRaw("TRASH", 1)
@@ -35,7 +36,6 @@ func TestGetRaw(t *testing.T) {
 		fmt.Println(k, string(v))
 	}
 }
-
 
 func Test_Reply(t *testing.T) {
 	r := GetNewMessages("TRASH", 1)
@@ -73,9 +73,9 @@ Mike Chirico
 mc@cwxstat.com
 (215) 326-9389 (text only)`
 
-Reply(r[id]["Id"][0],"mc@cwxstat.com",
-	r[id]["From"][0],msg)
-
-
+	subject := "C2C Contracts Only...  Re: " + r[id]["Subject"][0]
+	msgID := r[id]["Message-ID"][0]
+	Reply(r[id]["Id"][0], msgID, "mc@cwxstat.com",
+		r[id]["From"][0], subject, msg)
 
 }
