@@ -48,15 +48,23 @@ func Test_Reply(t *testing.T) {
 	fmt.Println(r[id]["Id"])
 
 	msg := `
-Please note:  I'm only open to a corp-to-corp contract, with my company CWXSTAT INC. Remote contract work ONLY.  Hourly rate between $98/hr to $117/hr.
+Please note:  I'm only open to a corp-to-corp contract, 
+with my company CWXSTAT INC. Remote contract work ONLY.  
 
-Please confirm this position is 100% remote,including after COVID-19, and will work on a corp-to-corp contract, within the hourly range stated above.  
+Hourly rate between $98/hr to $117/hr.
 
-Please be sure to include a mobile phone number, where you can be reached by text. I'm sharing my mobile number below.   
+Please confirm this position is 100% remote, including 
+after COVID-19, and will work on a corp-to-corp contract, 
+within the hourly range stated above.  
 
-If you agree with these conditions (hourly range and remote work), we can explore the next step. 
+Please be sure to include a mobile phone number, where you
+can be reached by text. I'm sharing my mobile number below.   
 
-Please confirm and respond to the email ONLY if you AGREE with ALL of these conditions.
+If you agree with these conditions (hourly range and remote work), 
+we can explore the next step. 
+
+Please confirm and respond to the email ONLY if you 
+AGREE with ALL of these conditions.
 
 
 Regards,
@@ -65,7 +73,8 @@ Mike Chirico
 mc@cwxstat.com
 (215) 326-9389 (text only)`
 
-Reply(r[id]["Id"][0],"mc@cwxstat.com",r[id]["From"][0],msg)
+Reply(r[id]["Id"][0],"mc@cwxstat.com",
+	r[id]["From"][0],msg)
 
 
 

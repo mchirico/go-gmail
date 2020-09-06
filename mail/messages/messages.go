@@ -120,7 +120,7 @@ func Send(to string, subject string, body string) error {
 
 }
 
-func Reply(replyID,from, to, msg_to_send string)  {
+func Reply(replyID, from, to, msg_to_send string)  {
 
 	srv := creds.NewGmailSrv()
 	nsrv := gmail.NewUsersService(srv)
