@@ -73,7 +73,14 @@ func (c *CREDS) PopulateCREDS() {
 
 	token, err := tokenFromFile(dir + "/token.json")
 	if err != nil {
-		log.Fatalf("Can't read token.json")
+		log.Printf("Can't read token.json. Trying again")
+		token, err = tokenFromFile("/credentials/token.json")
+		if err != nil {
+			log.Printf("NOPE. NOT in /credentials/token.json")
+			return
+		}
+
+		log.Printf("GOT IT.  /credentials/token.json")
 	}
 	c.token = token
 }

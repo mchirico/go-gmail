@@ -61,24 +61,15 @@ func Test_Reply(t *testing.T) {
 	fmt.Println(r[id]["Snippet"])
 	fmt.Println(r[id]["Id"])
 
+	if _, ok := r[id]["AI-Msg-Field"]; ok {
+		return
+	}
+
 	msg := `
 Please note:  I'm only open to a corp-to-corp contract, 
 with my company CWXSTAT INC. Remote contract work ONLY.  
 
-Hourly rate range $98/hr to $117/hr.
-
-Please confirm this position is 100% remote, including 
-after COVID-19, and will work on a corp-to-corp contract, 
-within the hourly range stated above.  
-
-Please be sure to include a mobile phone number, where you
-can be reached by text. I'm sharing my mobile number below.   
-
-If you agree with these conditions (hourly range and remote work), 
-we can explore the next step. 
-
-Please confirm and respond to the email ONLY if you 
-AGREE with ALL of these conditions.
+Is this for a contract?
 
 
 Regards,
@@ -87,10 +78,10 @@ Mike Chirico
 mc@cwxstat.com
 (215) 326-9389 (text only)`
 
-	subject := "C2C Contracts Only...  Re: " + r[id]["Subject"]
+	subject := "Contract? Remote? Re: " + r[id]["Subject"]
 	msgID := r[id]["Message-ID"]
-	m, err := Reply(r[id]["Id"], msgID, "mc@cwxstat.com",
-		r[id]["From"], subject, msg)
+	m, err := ReplyAI(r[id]["Id"], msgID, "mc@cwxstat.com",
+		r[id]["From"], subject, msg, "contract")
 	if err != nil {
 		t.Fatalf("err: %v\n", err)
 	}
