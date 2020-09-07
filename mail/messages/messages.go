@@ -47,8 +47,6 @@ func GetNewMessages(labelID string, maxCount int) []map[string]string {
 		}
 
 		g, _ := srv.Users.Messages.Get("me", v.Id).Format("metadata").Do()
-		//fmt.Println(g.Snippet)
-
 		tag := map[string]string{}
 
 		for _, v := range g.Payload.Headers {
