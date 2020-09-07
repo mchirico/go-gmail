@@ -1,5 +1,7 @@
 # go-gmail
 
+The requires pub-sub credentials.  Ref: [mchirico/go-pubsub](https://github.com/mchirico/go-pubsub)
+
 
 ## Build with vendor
 ```
