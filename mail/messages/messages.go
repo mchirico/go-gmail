@@ -147,6 +147,39 @@ func Reply(replyID, msgID, from, to, subject, msg_to_send string) (string, error
 
 }
 
+func ReplyAI(replyID, msgID, from, to, subject, msg_to_send, AImsg string) (string, error) {
+
+	srv := creds.NewGmailSrv()
+
+	rawMessage := ""
+	rawMessage += fmt.Sprintf("To: %s\r\n", to)
+	rawMessage += fmt.Sprintf("Subject: %s\r\n", subject)
+	rawMessage += fmt.Sprintf("Reply-To: %s\r\n", from)
+	rawMessage += fmt.Sprintf("In-Reply-To: %s\r\n", msgID)
+	rawMessage += fmt.Sprintf("References: %s\r\n", msgID)
+	rawMessage += fmt.Sprintf("Return-Path: %s\r\n", from)
+	rawMessage += fmt.Sprintf("AI-Msg-Field: %s\r\n", AImsg)
+
+	// Add extra linebreak for splitting headers and body
+	rawMessage += "\r\n\r\n"
+	rawMessage += msg_to_send
+
+	// New message for our gmail service to send
+	var message gmail.Message
+	message.Raw = base64.URLEncoding.EncodeToString([]byte(rawMessage))
+	message.ThreadId = replyID
+
+	// Send the message
+	_, err := srv.Users.Messages.Send("me", &message).Do()
+
+	if err != nil {
+		return "", err
+	} else {
+		return "Message sent!", err
+	}
+
+}
+
 func Thread(labelID string, maxCount int) map[string][]byte {
 
 	srv := creds.NewGmailSrv()
