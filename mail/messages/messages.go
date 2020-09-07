@@ -199,3 +199,15 @@ func StopWatch(userId string) (error) {
 	return nsrv.Stop(userId).Do()
 }
 
+func StartWatch(userid,topic string) (*gmail.WatchResponse, error){
+
+	trimTopic := strings.TrimSuffix(topic, "\n")
+	watchReq := &gmail.WatchRequest{
+		LabelIds:  []string{"TRASH"},
+		TopicName: trimTopic,
+	}
+
+	c := Watch(userid, watchReq)
+	wr, err := c.Do()
+    return wr,err
+}

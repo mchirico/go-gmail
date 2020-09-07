@@ -161,3 +161,11 @@ func Test_jsonR(t *testing.T) {
 func Test_play(t *testing.T) {
 	OnlyDoOnce()
 }
+
+func TestStartWatch(t *testing.T) {
+	b, _ := ioutil.ReadFile("../../credentials/topic_name.json")
+
+	topic := strings.TrimSuffix(string(b), "\n")
+
+	StartWatch("me",topic)
+}
