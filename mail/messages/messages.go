@@ -6,7 +6,6 @@ import (
 	"github.com/mchirico/go-gmail/mail/creds"
 	"google.golang.org/api/gmail/v1"
 	"io"
-	"strings"
 )
 
 // Labels - map of labels
@@ -119,39 +118,34 @@ func Send(to string, subject string, body string) error {
 
 }
 
-func Reply(replyID, msgID, from, to, subject, msg_to_send string, ) (string,error) {
+func Reply(replyID, msgID, from, to, subject, msg_to_send string) (string, error) {
 
 	srv := creds.NewGmailSrv()
 
-	var rawMessage = []string{}
-
-
-	// Add the to and Reply-To
-	rawMessage = append(rawMessage, fmt.Sprintf("To: %s\r\n", to))
-	rawMessage = append(rawMessage, fmt.Sprintf("Subject: %s\r\n", subject))
-	rawMessage = append(rawMessage, fmt.Sprintf("Reply-To: %s\r\n", from))
-	rawMessage = append(rawMessage, fmt.Sprintf("In-Reply-To: %s\r\n", msgID))
-	rawMessage = append(rawMessage, fmt.Sprintf("References: %s\r\n", msgID))
-	rawMessage = append(rawMessage, fmt.Sprintf("Return-Path: %s\r\n", from))
+	rawMessage := ""
+	rawMessage += fmt.Sprintf("To: %s\r\n", to)
+	rawMessage += fmt.Sprintf("Subject: %s\r\n", subject)
+	rawMessage += fmt.Sprintf("Reply-To: %s\r\n", from)
+	rawMessage += fmt.Sprintf("In-Reply-To: %s\r\n", msgID)
+	rawMessage += fmt.Sprintf("References: %s\r\n", msgID)
+	rawMessage += fmt.Sprintf("Return-Path: %s\r\n", from)
 
 	// Add extra linebreak for splitting headers and body
-	rawMessage = append(rawMessage, "\r\n\r\n")
-
-	rawMessage = append(rawMessage, msg_to_send)
+	rawMessage += "\r\n\r\n"
+	rawMessage += msg_to_send
 
 	// New message for our gmail service to send
 	var message gmail.Message
-	messageStr := []byte(strings.Join(rawMessage, ""))
-	message.Raw = base64.URLEncoding.EncodeToString(messageStr)
+	message.Raw = base64.URLEncoding.EncodeToString([]byte(rawMessage))
 	message.ThreadId = replyID
 
 	// Send the message
 	_, err := srv.Users.Messages.Send("me", &message).Do()
 
 	if err != nil {
-		return "",err
+		return "", err
 	} else {
-		return "Message sent!",err
+		return "Message sent!", err
 	}
 
 }
