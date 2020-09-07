@@ -167,5 +167,5 @@ func TestStartWatch(t *testing.T) {
 
 	topic := strings.TrimSuffix(string(b), "\n")
 
-	StartWatch("me",topic)
+	StartWatch("me", topic)
 }

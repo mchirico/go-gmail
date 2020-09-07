@@ -7,6 +7,7 @@ import (
 	"google.golang.org/api/gmail/v1"
 	"io"
 	"strings"
+	"time"
 )
 
 // Labels - map of labels
@@ -185,21 +186,21 @@ func Domains(r []map[string]string) map[string]int {
 	return domains
 }
 
-func Watch(userId string, watchReq *gmail.WatchRequest) (*gmail.UsersWatchCall) {
+func Watch(userId string, watchReq *gmail.WatchRequest) *gmail.UsersWatchCall {
 
 	srv := creds.NewGmailSrv()
-    nsrv := gmail.NewUsersService(srv)
+	nsrv := gmail.NewUsersService(srv)
 	return nsrv.Watch(userId, watchReq)
 
 }
 
-func StopWatch(userId string) (error) {
+func StopWatch(userId string) error {
 	srv := creds.NewGmailSrv()
 	nsrv := gmail.NewUsersService(srv)
 	return nsrv.Stop(userId).Do()
 }
 
-func StartWatch(userid,topic string) (*gmail.WatchResponse, error){
+func StartWatch(userid, topic string) (time.Time, error) {
 
 	trimTopic := strings.TrimSuffix(topic, "\n")
 	watchReq := &gmail.WatchRequest{
@@ -209,5 +210,8 @@ func StartWatch(userid,topic string) (*gmail.WatchResponse, error){
 
 	c := Watch(userid, watchReq)
 	wr, err := c.Do()
-    return wr,err
+
+	// Convert the milli seconds into seconds
+	timeUnix := time.Unix(wr.Expiration/1000, 0)
+	return timeUnix, err
 }
