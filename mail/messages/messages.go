@@ -6,6 +6,7 @@ import (
 	"github.com/mchirico/go-gmail/mail/creds"
 	"google.golang.org/api/gmail/v1"
 	"io"
+	"strings"
 )
 
 // Labels - map of labels
@@ -123,6 +124,7 @@ func Reply(replyID, msgID, from, to, subject, msg_to_send string) (string, error
 	rawMessage += fmt.Sprintf("In-Reply-To: %s\r\n", msgID)
 	rawMessage += fmt.Sprintf("References: %s\r\n", msgID)
 	rawMessage += fmt.Sprintf("Return-Path: %s\r\n", from)
+	rawMessage += fmt.Sprintf("AI-Msg-Field: %s\r\n", "suspect")
 
 	// Add extra linebreak for splitting headers and body
 	rawMessage += "\r\n\r\n"
@@ -142,4 +144,43 @@ func Reply(replyID, msgID, from, to, subject, msg_to_send string) (string, error
 		return "Message sent!", err
 	}
 
+}
+
+func Thread(labelID string, maxCount int) map[string][]byte {
+
+	srv := creds.NewGmailSrv()
+	nsrv := gmail.NewUsersService(srv)
+	msg, _ := nsrv.Threads.List("me").LabelIds(labelID).Do()
+
+	count := 0
+	rmsg := map[string][]byte{}
+	for _, v := range msg.Threads {
+		count += 1
+		if count > maxCount {
+			break
+		}
+		fmt.Println(v.Id, v.HistoryId, v.Snippet)
+		//g, _ := srv.Users.Messages.Get("me", v.Id).Format("raw").Do()
+		//data, _ := base64.RawURLEncoding.DecodeString(g.Raw)
+		//rmsg[v.Id] = data
+
+	}
+	return rmsg
+}
+
+func Domains(r []map[string]string) map[string]int {
+	domains := map[string]int{}
+	for id := range r {
+		s := r[id]["Return-Path"]
+		if strings.ContainsAny(s, "0123456789-") {
+			continue
+		}
+		idx0 := strings.Index(s, "@")
+		idx1 := strings.Index(s, ">")
+		if idx0 > 1 && idx1 > 1 {
+			domains[s[idx0+1:idx1]] += 1
+		}
+
+	}
+	return domains
 }

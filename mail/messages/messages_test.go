@@ -17,7 +17,7 @@ func TestLabels(t *testing.T) {
 
 func TestGetNewMessages(t *testing.T) {
 	r := GetNewMessages("TRASH", 3)
-	for id, _ := range r {
+	for id := range r {
 		fmt.Println(r[id]["Subject"])
 		fmt.Println(r[id]["Message-ID"])
 		fmt.Println(r[id]["Return-Path"])
@@ -37,6 +37,14 @@ func TestGetRaw(t *testing.T) {
 	}
 }
 
+func Test_ReturnDomains(t *testing.T) {
+
+	r := GetNewMessages("SPAM", 100)
+	Domains(r)
+	//	ioutil.WriteFile("domainsBlock",[]byte(st),0644)
+
+}
+
 func Test_Reply(t *testing.T) {
 	r := GetNewMessages("TRASH", 1)
 	id := 0
@@ -51,7 +59,7 @@ func Test_Reply(t *testing.T) {
 Please note:  I'm only open to a corp-to-corp contract, 
 with my company CWXSTAT INC. Remote contract work ONLY.  
 
-Hourly rate between $98/hr to $117/hr.
+Hourly rate range $98/hr to $117/hr.
 
 Please confirm this position is 100% remote, including 
 after COVID-19, and will work on a corp-to-corp contract, 
@@ -81,4 +89,8 @@ mc@cwxstat.com
 		t.Fatalf("err: %v\n", err)
 	}
 	t.Log(m)
+}
+
+func TestThread(t *testing.T) {
+	Thread("TRASH", 3)
 }
