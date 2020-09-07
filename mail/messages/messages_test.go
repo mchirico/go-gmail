@@ -1,8 +1,14 @@
 package messages
 
 import (
+	"bytes"
 	"fmt"
+	"github.com/mchirico/go-pubsub/pubsub"
+	"google.golang.org/api/gmail/v1"
+	"io/ioutil"
+	"strings"
 	"testing"
+	"time"
 )
 
 func TestLabels(t *testing.T) {
@@ -93,4 +99,65 @@ mc@cwxstat.com
 
 func TestThread(t *testing.T) {
 	Thread("TRASH", 3)
+}
+
+func OnlyDoOnce() {
+
+	b, err := ioutil.ReadFile("../../credentials/topic_name.json")
+
+	topic := strings.TrimSuffix(string(b), "\n")
+	watchReq := &gmail.WatchRequest{
+		LabelIds:  []string{"TRASH"},
+		TopicName: topic,
+	}
+
+	c := Watch("me", watchReq)
+	wr, err := c.Do()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(wr.Expiration)
+
+	// Convert the milli seconds into seconds
+	secs := wr.Expiration / 1000
+
+	tt := time.Unix(secs, 0)
+	nanos := wr.Expiration * 1000000
+	tM := time.Unix(0, nanos)
+	fmt.Printf("Expiration: %s\n", tt)
+	fmt.Printf("Expiration2: %s\n", tM)
+	fmt.Printf("HistoryId: %d\n", wr.HistoryId)
+
+}
+
+func TestWatch(t *testing.T) {
+
+	g := pubsub.NewG()
+	var buf bytes.Buffer
+
+	for i := 0; i < 10; i++ {
+		msg, err := g.PullMsgs(&buf, "gmail-sub")
+		if err != nil {
+			t.Fatalf("No message")
+		}
+		fmt.Printf("msg: %s\n", msg)
+	}
+
+}
+
+func Test_StopWatch(t *testing.T) {
+	err := StopWatch("me")
+	t.Log(err)
+}
+
+func Test_jsonR(t *testing.T) {
+	b, err := ioutil.ReadFile("../../credentials/topic_name.json")
+	if err != nil {
+		fmt.Println(string(b))
+	}
+	fmt.Printf("->%s<-\n", (string(b)))
+}
+
+func Test_play(t *testing.T) {
+	OnlyDoOnce()
 }

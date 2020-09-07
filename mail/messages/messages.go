@@ -184,3 +184,18 @@ func Domains(r []map[string]string) map[string]int {
 	}
 	return domains
 }
+
+func Watch(userId string, watchReq *gmail.WatchRequest) (*gmail.UsersWatchCall) {
+
+	srv := creds.NewGmailSrv()
+    nsrv := gmail.NewUsersService(srv)
+	return nsrv.Watch(userId, watchReq)
+
+}
+
+func StopWatch(userId string) (error) {
+	srv := creds.NewGmailSrv()
+	nsrv := gmail.NewUsersService(srv)
+	return nsrv.Stop(userId).Do()
+}
+
