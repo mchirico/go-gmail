@@ -73,12 +73,12 @@ Mike Chirico
 mc@cwxstat.com
 (215) 326-9389 (text only)`
 
-	subject := "C2C Contracts Only...  Re: " + r[id]["Subject"][0]
-	msgID := r[id]["Message-ID"][0]
-	m,err := Reply(r[id]["Id"][0], msgID, "mc@cwxstat.com",
-		r[id]["From"][0], subject, msg)
+	subject := "C2C Contracts Only...  Re: " + r[id]["Subject"]
+	msgID := r[id]["Message-ID"]
+	m, err := Reply(r[id]["Id"], msgID, "mc@cwxstat.com",
+		r[id]["From"], subject, msg)
 	if err != nil {
-		t.Fatalf("err: %v\n",err)
+		t.Fatalf("err: %v\n", err)
 	}
-    t.Log(m)
+	t.Log(m)
 }
