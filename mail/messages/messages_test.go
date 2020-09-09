@@ -22,7 +22,10 @@ func TestLabels(t *testing.T) {
 }
 
 func TestGetNewMessages(t *testing.T) {
-	r := GetNewMessages("TRASH", 3)
+	r, err := GetNewMessages("TRASH", 3)
+	if err != nil {
+		t.Fatalf("err: %v\n", err)
+	}
 	for id := range r {
 		fmt.Println(r[id]["Subject"])
 		fmt.Println(r[id]["Message-ID"])
@@ -45,14 +48,14 @@ func TestGetRaw(t *testing.T) {
 
 func Test_ReturnDomains(t *testing.T) {
 
-	r := GetNewMessages("SPAM", 100)
+	r, _ := GetNewMessages("SPAM", 100)
 	Domains(r)
 	//	ioutil.WriteFile("domainsBlock",[]byte(st),0644)
 
 }
 
 func Test_Reply(t *testing.T) {
-	r := GetNewMessages("TRASH", 1)
+	r, _ := GetNewMessages("TRASH", 1)
 	id := 0
 	fmt.Println(r[id]["Subject"])
 	fmt.Println(r[id]["Message-ID"])

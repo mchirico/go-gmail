@@ -32,11 +32,14 @@ func Labels() (map[string]string, error) {
 	return m, nil
 }
 
-func GetNewMessages(labelID string, maxCount int) []map[string]string {
+func GetNewMessages(labelID string, maxCount int) ([]map[string]string, error) {
 
 	srv := creds.NewGmailSrv()
 	nsrv := gmail.NewUsersService(srv)
-	msg, _ := nsrv.Messages.List("me").LabelIds(labelID).Do()
+	msg, err := nsrv.Messages.List("me").LabelIds(labelID).Do()
+	if err != nil {
+		return []map[string]string{}, err
+	}
 
 	count := 0
 	total := []map[string]string{}
@@ -48,7 +51,10 @@ func GetNewMessages(labelID string, maxCount int) []map[string]string {
 			break
 		}
 
-		g, _ := srv.Users.Messages.Get("me", v.Id).Format("metadata").Do()
+		g, err := srv.Users.Messages.Get("me", v.Id).Format("metadata").Do()
+		if err != nil {
+			return []map[string]string{}, err
+		}
 		tag := map[string]string{}
 
 		for _, v := range g.Payload.Headers {
@@ -60,7 +66,7 @@ func GetNewMessages(labelID string, maxCount int) []map[string]string {
 		tag["Id"] = v.Id
 		total = append(total, tag)
 	}
-	return total
+	return total, nil
 }
 
 func GetRaw(labelID string, maxCount int) map[string][]byte {
