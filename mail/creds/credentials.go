@@ -64,6 +64,13 @@ func NewGmailSrv() *gmail.Service {
 	return srv
 }
 
+func NewGmailSrv2() *gmail.Service {
+	c := CREDS{}
+	c.PopulateCREDS2()
+	srv := c.GetSRV()
+	return srv
+}
+
 func (c *CREDS) PopulateCREDS() {
 	dir, err := FindDir()
 	if err != nil {
@@ -86,6 +93,31 @@ func (c *CREDS) PopulateCREDS() {
 	}
 	c.token = token
 }
+
+
+func (c *CREDS) PopulateCREDS2() {
+	dir, err := FindDir()
+	if err != nil {
+		log.Fatalf("Can't find credential file")
+	}
+	c.b = ReadCredentials(dir)
+
+	token, err := tokenFromFile(dir + "/token2.json")
+	if err != nil {
+		log.Printf("Can't read token.json. %v\n", err)
+		log.Printf("Error msg: %v\n", err)
+		token, err = tokenFromFile("/credentials/2token.json")
+		if err != nil {
+			log.Printf("NOPE. NOT in /credentials/2token.json")
+			log.Printf("Error msg: %v\n", err)
+			return
+		}
+
+		log.Printf("GOT IT.  /credentials/token2.json")
+	}
+	c.token = token
+}
+
 
 func ReadCredentials(dir string) []byte {
 	b, err := ioutil.ReadFile(dir + "/credentials.json")

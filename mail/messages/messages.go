@@ -120,6 +120,26 @@ func Send(to string, subject string, body string) error {
 
 }
 
+func Send2(to string, subject string, body string) error {
+	m := Message{}
+	srv := creds.NewGmailSrv2()
+	var msg gmail.Message
+
+	m.Subject = subject
+	m.To = to
+	m.Body = body
+	s := "From: " + m.From + "\r\n" +
+		"reply-to: " + m.ReplyTo + "\r\n" +
+		"To: " + m.To + "\r\n" +
+		"Subject: " + m.Subject + "\r\n" +
+		"\r\n" + m.Body
+
+	msg.Raw = base64.StdEncoding.EncodeToString([]byte(s))
+	_, err := srv.Users.Messages.Send("me", &msg).Do()
+	return err
+
+}
+
 func Reply(replyID, msgID, from, to, subject, msg_to_send string) (string, error) {
 
 	srv := creds.NewGmailSrv()
@@ -153,20 +173,21 @@ func Reply(replyID, msgID, from, to, subject, msg_to_send string) (string, error
 
 }
 
-func SendContentType(to, subject, msg_to_send string) (string, error) {
+func SendContentType(to, subject, msg_to_send string) (*gmail.UsersMessagesSendCall) {
 
 	srv := creds.NewGmailSrv()
+
 
 	rawMessage := ""
 	rawMessage += fmt.Sprintf("To: %s\r\n", to)
 	rawMessage += fmt.Sprintf("Subject: %s\r\n", subject)
 	rawMessage += fmt.Sprintf("AI-Msg-Field: %s\r\n", "suspect")
-	rawMessage += fmt.Sprintf("Content-Type: %s\r\n",
-		"multipart/alternative; boundary=\"000000000000eaa62105aeea3888")
+    rawMessage += fmt.Sprintf("Content-Type: multipart/alternative; boundary=\"_=_swift-6292908865f5a34286af589.42593834_=_\"\r\n\r\n")
 
-	// Add extra linebreak for splitting headers and body
-	rawMessage += "\r\n\r\n"
+// multipart/alternative; boundary="_=_swift-6292908865f5a34286af589.42593834_=_"
+
 	rawMessage += msg_to_send
+
 
 	// New message for our gmail service to send
 	var message gmail.Message
@@ -174,13 +195,8 @@ func SendContentType(to, subject, msg_to_send string) (string, error) {
 
 
 	// Send the message
-	_, err := srv.Users.Messages.Send("me", &message).Do()
-
-	if err != nil {
-		return "", err
-	} else {
-		return "Message sent!", err
-	}
+	// _, err := srv.Users.Messages.Send("me", &message).Do()
+	return  srv.Users.Messages.Send("me", &message)
 
 }
 
@@ -219,6 +235,42 @@ func ReplyAI(replyID, msgID, from, to, subject, msg_to_send, AImsg string) (stri
 	}
 
 }
+
+func ReplyAI2(replyID, msgID, from, to, subject, msg_to_send, AImsg string) (string, error) {
+
+	srv := creds.NewGmailSrv2()
+
+	rawMessage := ""
+	rawMessage += fmt.Sprintf("To: %s\r\n", to)
+	rawMessage += fmt.Sprintf("Subject: %s\r\n", subject)
+	rawMessage += fmt.Sprintf("Reply-To: %s\r\n", from)
+	rawMessage += fmt.Sprintf("In-Reply-To: %s\r\n", msgID)
+	rawMessage += fmt.Sprintf("References: %s\r\n", msgID)
+	rawMessage += fmt.Sprintf("Return-Path: %s\r\n", from)
+	rawMessage += fmt.Sprintf("AI-Msg-Field: %s\r\n", AImsg)
+
+	// Add extra linebreak for splitting headers and body
+	rawMessage += "\r\n\r\n"
+	rawMessage += msg_to_send
+
+	// New message for our gmail service to send
+	var message gmail.Message
+	message.Raw = base64.URLEncoding.EncodeToString([]byte(rawMessage))
+	message.ThreadId = replyID
+
+	// Send the message
+	_, err := srv.Users.Messages.Send("me", &message).Do()
+
+	if err != nil {
+		return "", err
+	} else {
+		return "Message sent!", err
+	}
+
+}
+
+
+
 
 func Thread(labelID string, maxCount int) map[string][]byte {
 
