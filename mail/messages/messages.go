@@ -153,15 +153,13 @@ func Reply(replyID, msgID, from, to, subject, msg_to_send string) (string, error
 
 }
 
-func SendContentType(from, to, subject, msg_to_send string) (string, error) {
+func SendContentType(to, subject, msg_to_send string) (string, error) {
 
 	srv := creds.NewGmailSrv()
 
 	rawMessage := ""
 	rawMessage += fmt.Sprintf("To: %s\r\n", to)
 	rawMessage += fmt.Sprintf("Subject: %s\r\n", subject)
-	rawMessage += fmt.Sprintf("Reply-To: %s\r\n", from)
-	rawMessage += fmt.Sprintf("Return-Path: %s\r\n", from)
 	rawMessage += fmt.Sprintf("AI-Msg-Field: %s\r\n", "suspect")
 	rawMessage += fmt.Sprintf("Content-Type: %s\r\n",
 		"multipart/alternative; boundary=\"000000000000eaa62105aeea3888")
