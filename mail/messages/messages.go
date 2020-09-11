@@ -11,12 +11,15 @@ import (
 )
 
 // Labels - map of labels
-func Labels() (map[string]string, error) {
+func Labels(srvID int) (map[string]string, error) {
 
-	srv := creds.NewGmailSrv()
+	srv, err := creds.NewGmailSrv()
+	if err != nil {
+		return map[string]string{},err
+	}
 	user := "me"
 	m := map[string]string{}
-	r, err := srv.Users.Labels.List(user).Do()
+	r, err := srv[srvID].Users.Labels.List(user).Do()
 	if err != nil {
 		return m, err
 	}
@@ -32,10 +35,13 @@ func Labels() (map[string]string, error) {
 	return m, nil
 }
 
-func GetNewMessages(labelID string, maxCount int) ([]map[string]string, error) {
+func GetNewMessages(srvID int, labelID string, maxCount int) ([]map[string]string, error) {
 
-	srv := creds.NewGmailSrv()
-	nsrv := gmail.NewUsersService(srv)
+	srv, err := creds.NewGmailSrv()
+	if err != nil {
+		return []map[string]string{},nil
+	}
+	nsrv := gmail.NewUsersService(srv[srvID])
 	msg, err := nsrv.Messages.List("me").LabelIds(labelID).Do()
 	if err != nil {
 		return []map[string]string{}, err
@@ -51,7 +57,7 @@ func GetNewMessages(labelID string, maxCount int) ([]map[string]string, error) {
 			break
 		}
 
-		g, err := srv.Users.Messages.Get("me", v.Id).Format("metadata").Do()
+		g, err := srv[srvID].Users.Messages.Get("me", v.Id).Format("metadata").Do()
 		if err != nil {
 			return []map[string]string{}, err
 		}
@@ -69,10 +75,13 @@ func GetNewMessages(labelID string, maxCount int) ([]map[string]string, error) {
 	return total, nil
 }
 
-func GetRaw(labelID string, maxCount int) map[string][]byte {
+func GetRaw(srvID int, labelID string, maxCount int) map[string][]byte {
 
-	srv := creds.NewGmailSrv()
-	nsrv := gmail.NewUsersService(srv)
+	srv, err := creds.NewGmailSrv()
+	if err != nil {
+		return map[string][]byte{}
+	}
+	nsrv := gmail.NewUsersService(srv[srvID])
 	msg, _ := nsrv.Messages.List("me").LabelIds(labelID).Do()
 
 	count := 0
@@ -83,7 +92,7 @@ func GetRaw(labelID string, maxCount int) map[string][]byte {
 			break
 		}
 
-		g, _ := srv.Users.Messages.Get("me", v.Id).Format("raw").Do()
+		g, _ := srv[srvID].Users.Messages.Get("me", v.Id).Format("raw").Do()
 		data, _ := base64.RawURLEncoding.DecodeString(g.Raw)
 		rmsg[v.Id] = data
 
@@ -100,9 +109,12 @@ type Message struct {
 	Attachment io.Reader
 }
 
-func Send(to string, subject string, body string) error {
+func Send(srvID int, to string, subject string, body string) error {
 	m := Message{}
-	srv := creds.NewGmailSrv()
+	srv, err := creds.NewGmailSrv()
+	if err != nil {
+		return err
+	}
 	var msg gmail.Message
 
 	m.Subject = subject
@@ -115,34 +127,18 @@ func Send(to string, subject string, body string) error {
 		"\r\n" + m.Body
 
 	msg.Raw = base64.StdEncoding.EncodeToString([]byte(s))
-	_, err := srv.Users.Messages.Send("me", &msg).Do()
+	_, err = srv[srvID].Users.Messages.Send("me", &msg).Do()
 	return err
 
 }
 
-func Send2(to string, subject string, body string) error {
-	m := Message{}
-	srv := creds.NewGmailSrv2()
-	var msg gmail.Message
 
-	m.Subject = subject
-	m.To = to
-	m.Body = body
-	s := "From: " + m.From + "\r\n" +
-		"reply-to: " + m.ReplyTo + "\r\n" +
-		"To: " + m.To + "\r\n" +
-		"Subject: " + m.Subject + "\r\n" +
-		"\r\n" + m.Body
+func Reply(srvID int, replyID, msgID, from, to, subject, msg_to_send string) (string, error) {
 
-	msg.Raw = base64.StdEncoding.EncodeToString([]byte(s))
-	_, err := srv.Users.Messages.Send("me", &msg).Do()
-	return err
-
-}
-
-func Reply(replyID, msgID, from, to, subject, msg_to_send string) (string, error) {
-
-	srv := creds.NewGmailSrv()
+	srv, err := creds.NewGmailSrv()
+	if err != nil {
+		return "",err
+	}
 
 	rawMessage := ""
 	rawMessage += fmt.Sprintf("To: %s\r\n", to)
@@ -163,7 +159,7 @@ func Reply(replyID, msgID, from, to, subject, msg_to_send string) (string, error
 	message.ThreadId = replyID
 
 	// Send the message
-	_, err := srv.Users.Messages.Send("me", &message).Do()
+	_, err = srv[srvID].Users.Messages.Send("me", &message).Do()
 
 	if err != nil {
 		return "", err
@@ -173,39 +169,16 @@ func Reply(replyID, msgID, from, to, subject, msg_to_send string) (string, error
 
 }
 
-func SendContentType(to, subject, msg_to_send string) (*gmail.UsersMessagesSendCall) {
-
-	srv := creds.NewGmailSrv()
-
-
-	rawMessage := ""
-	rawMessage += fmt.Sprintf("To: %s\r\n", to)
-	rawMessage += fmt.Sprintf("Subject: %s\r\n", subject)
-	rawMessage += fmt.Sprintf("AI-Msg-Field: %s\r\n", "suspect")
-    rawMessage += fmt.Sprintf("Content-Type: multipart/alternative; boundary=\"_=_swift-6292908865f5a34286af589.42593834_=_\"\r\n\r\n")
-
-// multipart/alternative; boundary="_=_swift-6292908865f5a34286af589.42593834_=_"
-
-	rawMessage += msg_to_send
-
-
-	// New message for our gmail service to send
-	var message gmail.Message
-	message.Raw = base64.URLEncoding.EncodeToString([]byte(rawMessage))
-
-
-	// Send the message
-	// _, err := srv.Users.Messages.Send("me", &message).Do()
-	return  srv.Users.Messages.Send("me", &message)
-
-}
 
 
 
 
-func ReplyAI(replyID, msgID, from, to, subject, msg_to_send, AImsg string) (string, error) {
+func ReplyAI(srvID int, replyID, msgID, from, to, subject, msg_to_send, AImsg string) (string, error) {
 
-	srv := creds.NewGmailSrv()
+	srv, err := creds.NewGmailSrv()
+	if err != nil {
+		return "",err
+	}
 
 	rawMessage := ""
 	rawMessage += fmt.Sprintf("To: %s\r\n", to)
@@ -226,40 +199,7 @@ func ReplyAI(replyID, msgID, from, to, subject, msg_to_send, AImsg string) (stri
 	message.ThreadId = replyID
 
 	// Send the message
-	_, err := srv.Users.Messages.Send("me", &message).Do()
-
-	if err != nil {
-		return "", err
-	} else {
-		return "Message sent!", err
-	}
-
-}
-
-func ReplyAI2(replyID, msgID, from, to, subject, msg_to_send, AImsg string) (string, error) {
-
-	srv := creds.NewGmailSrv2()
-
-	rawMessage := ""
-	rawMessage += fmt.Sprintf("To: %s\r\n", to)
-	rawMessage += fmt.Sprintf("Subject: %s\r\n", subject)
-	rawMessage += fmt.Sprintf("Reply-To: %s\r\n", from)
-	rawMessage += fmt.Sprintf("In-Reply-To: %s\r\n", msgID)
-	rawMessage += fmt.Sprintf("References: %s\r\n", msgID)
-	rawMessage += fmt.Sprintf("Return-Path: %s\r\n", from)
-	rawMessage += fmt.Sprintf("AI-Msg-Field: %s\r\n", AImsg)
-
-	// Add extra linebreak for splitting headers and body
-	rawMessage += "\r\n\r\n"
-	rawMessage += msg_to_send
-
-	// New message for our gmail service to send
-	var message gmail.Message
-	message.Raw = base64.URLEncoding.EncodeToString([]byte(rawMessage))
-	message.ThreadId = replyID
-
-	// Send the message
-	_, err := srv.Users.Messages.Send("me", &message).Do()
+	_, err = srv[srvID].Users.Messages.Send("me", &message).Do()
 
 	if err != nil {
 		return "", err
@@ -272,10 +212,12 @@ func ReplyAI2(replyID, msgID, from, to, subject, msg_to_send, AImsg string) (str
 
 
 
-func Thread(labelID string, maxCount int) map[string][]byte {
 
-	srv := creds.NewGmailSrv()
-	nsrv := gmail.NewUsersService(srv)
+func Thread(srvID int, labelID string, maxCount int) map[string][]byte {
+
+	srv,_ := creds.NewGmailSrv()
+
+	nsrv := gmail.NewUsersService(srv[srvID])
 	msg, _ := nsrv.Threads.List("me").LabelIds(labelID).Do()
 
 	count := 0
@@ -311,21 +253,24 @@ func Domains(r []map[string]string) map[string]int {
 	return domains
 }
 
-func Watch(userId string, watchReq *gmail.WatchRequest) *gmail.UsersWatchCall {
+func Watch(srvID int, userId string, watchReq *gmail.WatchRequest) *gmail.UsersWatchCall {
 
-	srv := creds.NewGmailSrv()
-	nsrv := gmail.NewUsersService(srv)
+	srv,_ := creds.NewGmailSrv()
+	nsrv := gmail.NewUsersService(srv[srvID])
 	return nsrv.Watch(userId, watchReq)
 
 }
 
-func StopWatch(userId string) error {
-	srv := creds.NewGmailSrv()
-	nsrv := gmail.NewUsersService(srv)
+func StopWatch(srvID int, userId string) error {
+	srv,err := creds.NewGmailSrv()
+	if err != nil {
+		return err
+	}
+	nsrv := gmail.NewUsersService(srv[srvID])
 	return nsrv.Stop(userId).Do()
 }
 
-func StartWatch(userid, topic string) (time.Time, error) {
+func StartWatch(srvID int, userid, topic string) (time.Time, error) {
 
 	trimTopic := strings.TrimSuffix(topic, "\n")
 	watchReq := &gmail.WatchRequest{
@@ -333,7 +278,7 @@ func StartWatch(userid, topic string) (time.Time, error) {
 		TopicName: trimTopic,
 	}
 
-	c := Watch(userid, watchReq)
+	c := Watch(srvID, userid, watchReq)
 	wr, err := c.Do()
 
 	// Convert the milli seconds into seconds

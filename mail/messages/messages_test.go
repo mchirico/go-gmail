@@ -12,7 +12,7 @@ import (
 )
 
 func TestLabels(t *testing.T) {
-	m, err := Labels()
+	m, err := Labels(0)
 	if err != nil {
 		t.Fatalf("Labels: %v\n", err)
 	}
@@ -22,7 +22,7 @@ func TestLabels(t *testing.T) {
 }
 
 func TestGetNewMessages(t *testing.T) {
-	r, err := GetNewMessages("TRASH", 3)
+	r, err := GetNewMessages(0,"TRASH", 3)
 	if err != nil {
 		t.Fatalf("err: %v\n", err)
 	}
@@ -40,7 +40,7 @@ func TestGetNewMessages(t *testing.T) {
 }
 
 func TestGetRaw(t *testing.T) {
-	r := GetRaw("TRASH", 1)
+	r := GetRaw(0,"TRASH", 1)
 	for k, v := range r {
 		fmt.Println(k, string(v))
 	}
@@ -48,7 +48,7 @@ func TestGetRaw(t *testing.T) {
 
 func Test_ReturnDomains(t *testing.T) {
 
-	r, _ := GetNewMessages("SPAM", 1000)
+	r, _ := GetNewMessages(0,"SPAM", 1000)
 	m := Domains(r)
 	s :=""
 	for k,v :=range m {
@@ -59,7 +59,7 @@ func Test_ReturnDomains(t *testing.T) {
 }
 
 func Test_Reply(t *testing.T) {
-	r, _ := GetNewMessages("TRASH", 1)
+	r, _ := GetNewMessages(0,"TRASH", 1)
 	id := 0
 	fmt.Println(r[id]["Subject"])
 	fmt.Println(r[id]["Message-ID"])
@@ -87,7 +87,7 @@ mc@cwxstat.com
 
 	subject := "Contract? Remote? Re: " + r[id]["Subject"]
 	msgID := r[id]["Message-ID"]
-	m, err := ReplyAI(r[id]["Id"], msgID, "mc@cwxstat.com",
+	m, err := ReplyAI(0,r[id]["Id"], msgID, "mc@cwxstat.com",
 		r[id]["From"], subject, msg, "contract")
 	if err != nil {
 		t.Fatalf("err: %v\n", err)
@@ -95,25 +95,10 @@ mc@cwxstat.com
 	t.Log(m)
 }
 
-func TestSendContentType(t *testing.T) {
-	msg := `stuff`
-	r := SendContentType("mchirico@gmail.com",
-		"test1",msg)
-	//headers := r.Header()
-	//value := `multipart/alternative; boundary="_=_swift-6292908865f5a34286af589.42593834_=_"`
-	//headers.Set("Subject","bozo")
 
-
-	fmt.Println(r)
-	message,err := r.Do()
-	if err != nil {
-		fmt.Printf("ERR!!\n\n")
-		fmt.Println(message,err)
-	}
-}
 
 func TestThread(t *testing.T) {
-	Thread("TRASH", 3)
+	Thread(0,"TRASH", 3)
 }
 
 func OnlyDoOnce() {
@@ -126,7 +111,7 @@ func OnlyDoOnce() {
 		TopicName: topic,
 	}
 
-	c := Watch("me", watchReq)
+	c := Watch(0,"me", watchReq)
 	wr, err := c.Do()
 	if err != nil {
 		panic(err)
@@ -161,7 +146,7 @@ func TestWatch(t *testing.T) {
 }
 
 func Test_StopWatch(t *testing.T) {
-	err := StopWatch("me")
+	err := StopWatch(0,"me")
 	t.Log(err)
 }
 
@@ -182,5 +167,5 @@ func TestStartWatch(t *testing.T) {
 
 	topic := strings.TrimSuffix(string(b), "\n")
 
-	StartWatch("me", topic)
+	StartWatch(0,"me", topic)
 }
