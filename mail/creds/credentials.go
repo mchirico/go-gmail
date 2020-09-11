@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -53,7 +54,7 @@ type CREDS struct {
 	file   string
 	dir    string
 	client *http.Client
-	token  *oauth2.Token
+	token  []*oauth2.Token
 	srv    *gmail.Service
 }
 
@@ -64,12 +65,28 @@ func NewGmailSrv() *gmail.Service {
 	return srv
 }
 
-func NewGmailSrv2() *gmail.Service {
-	c := CREDS{}
-	c.PopulateCREDS2()
-	srv := c.GetSRV()
-	return srv
+func ListTokens(root string) ([]string, error) {
+	files := []string{}
+	token_files := []string{}
+
+
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		files = append(files, path)
+		return nil
+	})
+	if err != nil {
+		return files,err
+	}
+	for _, file := range files {
+		if strings.Contains(file,"token") {
+			token_files = append(token_files,file)
+		}
+	}
+	sort.Strings(token_files)
+	return token_files, err
 }
+
+
 
 func (c *CREDS) PopulateCREDS() {
 	dir, err := FindDir()
@@ -91,7 +108,7 @@ func (c *CREDS) PopulateCREDS() {
 
 		log.Printf("GOT IT.  /credentials/token.json")
 	}
-	c.token = token
+	c.token[0] = token
 }
 
 
@@ -115,7 +132,7 @@ func (c *CREDS) PopulateCREDS2() {
 
 		log.Printf("GOT IT.  /credentials/token2.json")
 	}
-	c.token = token
+	c.token[0] = token
 }
 
 
@@ -145,7 +162,7 @@ func (c *CREDS) GetSRV() *gmail.Service {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
 
-	c.client = config.Client(context.Background(), c.token)
+	c.client = config.Client(context.Background(), c.token[0])
 
 	srv, err := gmail.New(c.client)
 	if err != nil {

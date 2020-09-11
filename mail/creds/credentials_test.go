@@ -8,6 +8,12 @@ import (
 	"testing"
 )
 
+func TestListTokens(t *testing.T) {
+	dir, _ := FindDir()
+	r,_ :=ListTokens(dir)
+	fmt.Printf("%v\n",r)
+}
+
 func Test_findDir(t *testing.T) {
 
 	c := CREDS{}
