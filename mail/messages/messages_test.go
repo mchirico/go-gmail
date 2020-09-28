@@ -50,11 +50,11 @@ func Test_ReturnDomains(t *testing.T) {
 
 	r, _ := GetNewMessages("SPAM", 1000)
 	m := Domains(r)
-	s :=""
-	for k,v :=range m {
-		s+=fmt.Sprintf("%s,%d\n",k,v)
+	s := ""
+	for k, v := range m {
+		s += fmt.Sprintf("%s,%d\n", k, v)
 	}
-	ioutil.WriteFile("domainsBlock",[]byte(s),0644)
+	ioutil.WriteFile("domainsBlock", []byte(s), 0644)
 
 }
 
@@ -98,17 +98,16 @@ mc@cwxstat.com
 func TestSendContentType(t *testing.T) {
 	msg := `stuff`
 	r := SendContentType("mchirico@gmail.com",
-		"test1",msg)
+		"test1", msg)
 	//headers := r.Header()
 	//value := `multipart/alternative; boundary="_=_swift-6292908865f5a34286af589.42593834_=_"`
 	//headers.Set("Subject","bozo")
 
-
 	fmt.Println(r)
-	message,err := r.Do()
+	message, err := r.Do()
 	if err != nil {
 		fmt.Printf("ERR!!\n\n")
-		fmt.Println(message,err)
+		fmt.Println(message, err)
 	}
 }
 

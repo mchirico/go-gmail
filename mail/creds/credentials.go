@@ -94,7 +94,6 @@ func (c *CREDS) PopulateCREDS() {
 	c.token = token
 }
 
-
 func (c *CREDS) PopulateCREDS2() {
 	dir, err := FindDir()
 	if err != nil {
@@ -117,7 +116,6 @@ func (c *CREDS) PopulateCREDS2() {
 	}
 	c.token = token
 }
-
 
 func ReadCredentials(dir string) []byte {
 	b, err := ioutil.ReadFile(dir + "/credentials.json")

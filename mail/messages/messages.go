@@ -60,9 +60,7 @@ func GetNewMessages(labelID string, maxCount int) ([]map[string]string, error) {
 		for _, v := range g.Payload.Headers {
 			tag[v.Name] = v.Value
 		}
-
 		tag["Snippet"] = g.Snippet
-		total = append(total, tag)
 		tag["Id"] = v.Id
 		total = append(total, tag)
 	}
@@ -173,35 +171,29 @@ func Reply(replyID, msgID, from, to, subject, msg_to_send string) (string, error
 
 }
 
-func SendContentType(to, subject, msg_to_send string) (*gmail.UsersMessagesSendCall) {
+func SendContentType(to, subject, msg_to_send string) *gmail.UsersMessagesSendCall {
 
 	srv := creds.NewGmailSrv()
-
 
 	rawMessage := ""
 	rawMessage += fmt.Sprintf("To: %s\r\n", to)
 	rawMessage += fmt.Sprintf("Subject: %s\r\n", subject)
 	rawMessage += fmt.Sprintf("AI-Msg-Field: %s\r\n", "suspect")
-    rawMessage += fmt.Sprintf("Content-Type: multipart/alternative; boundary=\"_=_swift-6292908865f5a34286af589.42593834_=_\"\r\n\r\n")
+	rawMessage += fmt.Sprintf("Content-Type: multipart/alternative; boundary=\"_=_swift-6292908865f5a34286af589.42593834_=_\"\r\n\r\n")
 
-// multipart/alternative; boundary="_=_swift-6292908865f5a34286af589.42593834_=_"
+	// multipart/alternative; boundary="_=_swift-6292908865f5a34286af589.42593834_=_"
 
 	rawMessage += msg_to_send
-
 
 	// New message for our gmail service to send
 	var message gmail.Message
 	message.Raw = base64.URLEncoding.EncodeToString([]byte(rawMessage))
 
-
 	// Send the message
 	// _, err := srv.Users.Messages.Send("me", &message).Do()
-	return  srv.Users.Messages.Send("me", &message)
+	return srv.Users.Messages.Send("me", &message)
 
 }
-
-
-
 
 func ReplyAI(replyID, msgID, from, to, subject, msg_to_send, AImsg string) (string, error) {
 
@@ -268,9 +260,6 @@ func ReplyAI2(replyID, msgID, from, to, subject, msg_to_send, AImsg string) (str
 	}
 
 }
-
-
-
 
 func Thread(labelID string, maxCount int) map[string][]byte {
 
