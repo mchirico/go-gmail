@@ -183,3 +183,18 @@ func TestStartWatch(t *testing.T) {
 
 	StartWatch("me", topic)
 }
+
+func Test_Delete(t *testing.T) {
+	_, err := Delete("INBOX")
+	if err != nil {
+		t.Fatalf("%s\n", err)
+	}
+	_, err = Delete("SPAM")
+	if err != nil {
+		t.Fatalf("%s\n", err)
+	}
+	_, err = Delete("TRASH")
+	if err != nil {
+		t.Fatalf("%s\n", err)
+	}
+}

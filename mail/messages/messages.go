@@ -32,6 +32,21 @@ func Labels() (map[string]string, error) {
 	return m, nil
 }
 
+func Delete(labelID string) (int64, error) {
+	var count int64
+	srv := creds.NewGmailSrv()
+	nsrv := gmail.NewUsersService(srv)
+	msg, err := nsrv.Messages.List("me").LabelIds(labelID).Do()
+	if err != nil {
+		return count, err
+	}
+	for _, v := range msg.Messages {
+		count += 1
+		nsrv.Messages.Delete("me", v.Id).Do()
+	}
+	return count, err
+}
+
 func GetNewMessages(labelID string, maxCount int) ([]map[string]string, error) {
 
 	srv := creds.NewGmailSrv()
